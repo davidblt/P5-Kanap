@@ -78,8 +78,28 @@ addToCartBtn.addEventListener('click', () => {
 		color: colorSelect.value,
 		qty: productQuantity.value,
 	};
-	addCart(item);
+	checkCart(item);
 });
+
+/**
+ * vérifie si les coloris et quantités ne sont pas renseignés :
+ * vérification sur l'article (item).
+ * si le formulaire n'est pas complet, afficher un message.
+ * si le formulaire est correct, éxécuter la fonction d'ajout au panier.
+ */
+const checkCart = (item) => {
+	if (colorSelect.value == '' && quantity.value == 0) {
+		alert('Veuillez choisir un coloris et une quantité, svp');
+	} else if (colorSelect.value == '' && quantity.value !== 0) {
+		alert('Veuillez choisir un coloris, svp');
+	} else if (colorSelect.value !== '' && quantity.value == 0) {
+		alert('Veuillez choisir une quantité, svp');
+	} else if (quantity.value > 100) {
+		alert('Veuillez choisir une quantité maximum de 100 articles, svp');
+	} else {
+		addCart(item);
+	}
+};
 
 // stocke le panier (cartArray) dans le local storage en JSON :
 const saveCart = (cartArray) => {
