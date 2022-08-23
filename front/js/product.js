@@ -74,7 +74,6 @@ displayProduct();
 addToCartBtn.addEventListener('click', () => {
 	let item = {
 		id: id,
-		name: product.name,
 		color: colorSelect.value,
 		qty: productQuantity.value,
 	};
