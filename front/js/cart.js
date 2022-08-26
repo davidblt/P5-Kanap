@@ -6,7 +6,7 @@ let section = document.getElementById('cart__items');
 // Variables pour les fonctions de calcul totaux quantités et prix :
 let totalPrice = 0;
 let totalQuantity = 0;
-let itemQty = 0;
+// let itemQty = 0;
 
 // Enregistrement panier dans le local storage :
 const saveCart = (cartArray) => {
@@ -52,8 +52,8 @@ const totalQuantityPrice = () => {
  * Si le panier est vide, la fonction empty() est exécutée.
  * Sinon, fetch() pour récupérer toutes les données des produits
  * de l'API.Ceci car il n'y a que id, qty et color dans le local storage.
- * Puis : boucle 'for in' pour chaque clé [i] du tableau (cartArray),
- * récupére l' id, qty et color.
+ * Puis : boucle 'for each' pour chaque item du tableau (cartArray),
+ * récupére l' id, qty et color,
  * Crée et insère les éléments dans le DOM.
  * Appel des fonctions annexes.
  */
@@ -146,6 +146,7 @@ if (cartArray == null) {
 				// appel fonction de calcul des totaux qtés et prix :
 				totalQuantityPrice();
 			});
+			changeQuantity();
 			deleteItemFromCart();
 		})
 		.catch((err) => console.log(err));
@@ -154,8 +155,9 @@ if (cartArray == null) {
 // Fonction supprime des articles du panier :
 const deleteItemFromCart = () => {
 	let deleteItem = document.querySelectorAll('.deleteItem');
+
 	deleteItem.forEach((deleteItem) => {
-		deleteItem.addEventListener('click', (event) => {
+		deleteItem.addEventListener('click', () => {
 			confirmDelete = confirm('Voulez-vous retirer cet article du panier ?');
 			if (confirmDelete) {
 				// closest() pointe le premier parent <article> du bouton supprimer, pour obtenir ensuite les id et color à comparer :
@@ -170,13 +172,44 @@ const deleteItemFromCart = () => {
 				saveCart(cartArray);
 
 				// Si le panier est vide, fonction emptyCart() :
-				if (cartArray == null) {
+				if (cartArray == null || cartArray.length == 0) {
 					emptyCart();
 				} else {
 					totalItemQuantity();
 					totalItemPrice();
 					location.reload();
 				}
+			}
+		});
+	});
+};
+
+// Fonction modifie les quantités et prix :
+const changeQuantity = () => {
+	let inputButton = document.querySelectorAll('.itemQuantity');
+
+	inputButton.forEach((item) => {
+		item.addEventListener('change', () => {
+			let newQuantity = item.value;
+			let articleTag = item.closest('article');
+
+			let foundProduct = cartArray.find(
+				(art) =>
+					art.id == articleTag.dataset.id &&
+					art.color == articleTag.dataset.color
+			);
+			if (
+				newQuantity > 0 &&
+				newQuantity <= 100 &&
+				Number.isInteger(newQuantity)
+			) {
+				foundProduct.qty = newQuantity;
+				saveCart(cartArray);
+				totalItemQuantity();
+				totalItemPrice();
+				location.reload();
+			} else {
+				alert('La quantité de cet article doit être comprise entre 1 et 100');
 			}
 		});
 	});
