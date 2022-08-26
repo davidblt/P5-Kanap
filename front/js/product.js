@@ -102,7 +102,7 @@ const checkCart = (item) => {
 
 // stocke le panier (cartArray) dans le local storage en JSON :
 const saveCart = (cartArray) => {
-	localStorage.setItem('added', JSON.stringify(cartArray));
+	localStorage.setItem('inCart', JSON.stringify(cartArray));
 };
 
 /**
@@ -122,7 +122,7 @@ const saveCart = (cartArray) => {
  * 3. afficher un message de confirmation au client.
  */
 const addCart = (item) => {
-	let cartArray = JSON.parse(localStorage.getItem('added'));
+	let cartArray = JSON.parse(localStorage.getItem('inCart'));
 	if (cartArray == null) {
 		cartArray = [];
 		cartArray.push(item);
@@ -132,12 +132,11 @@ const addCart = (item) => {
 			(art) => art.id == item.id && art.color == item.color
 		);
 		if (foundItem != undefined) {
-			foundItem.qty = Number(item.qty) + Number(foundItem.qty);
-			saveCart(cartArray);
+			foundItem.qty = parseInt(item.qty) + parseInt(foundItem.qty);
 		} else {
 			cartArray.push(item);
-			saveCart(cartArray);
 		}
+		saveCart(cartArray);
 	}
 	alert(
 		`${item.qty}` +
