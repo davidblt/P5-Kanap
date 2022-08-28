@@ -1,30 +1,31 @@
-// variables pour insertion des infos produit + ajout panier :
-const productImg = document.createElement('img');
-const productName = document.getElementById('title');
-const productPrice = document.getElementById('price');
-const productDescription = document.getElementById('description');
-const colorSelect = document.getElementById('colors');
-const productQuantity = document.getElementById('quantity');
-const addToCartBtn = document.getElementById('addToCart');
+// variables pour insertion des infos article + ajout panier :
+const itemImageTag = document.createElement('img');
+const itemNameTag = document.getElementById('title');
+const itemPriceTag = document.getElementById('price');
+const itemDescriptionTag = document.getElementById('description');
+const colorSelectTag = document.getElementById('colors');
+const itemQuantityTag = document.getElementById('quantity');
+const addToCartButton = document.getElementById('addToCart');
 
 /**
- * La variable "url" récupère tous les paramètres de l'URL de la page "product" * en cours après le ?.
- * URLSearchParams.get(), récupére la variable id de l'URL.
+ * La variable "url" récupère tous les paramètres de l'URL de la 
+ * "product" en cours après le "?".
+ * URLSearchParams.get(), récupére la variable "id" de l'URL.
  */
 const url = window.location.search; // (?id=...)
 const id = new URLSearchParams(url).get('id');
 
 /**
- * requête API pour récupérer les infos du produit avec id :
+ * requête API pour récupérer les infos de l'article avec son id :
  * réponse (res) transformée en JSON,
- * puis nouvelle réponse (data) devient 'product'.
+ * puis nouvelle réponse (data) devient 'itemSelected'.
  * si erreur, insère un message dans le DOM pour informer
- * 'utilisateur. La console indique aussi une erreur.
+ * l'utilisateur. La console indique aussi une erreur automatiquement.
  */
-const apiRequestProduct = async () => {
+const apiRequestItem = async () => {
 	await fetch(`http://localhost:3000/api/products/${id}`)
 		.then((res) => res.json())
-		.then((data) => (product = data))
+		.then((data) => (itemSelected = data))
 		.catch((err) => {
 			let error = document.querySelector('.item__content');
 			error.style.fontSize = '1.7rem';
@@ -33,49 +34,50 @@ const apiRequestProduct = async () => {
 };
 
 /**
- * crée et insère les éléments du produit dans le DOM :
+ * crée et insère les éléments de l'article dans le DOM :
  * attente de la réponse de l'API avant
  * insertion (await):
  * 		- 'title' du document
- * 		- balise image + attribut 'alt'
+ * 		- balise image + attribut 'src et 'alt'
  * 		- nom + prix + description
- * 		- choix de couleurs : pour chaque couleur du tableau
- * 	 "colorsTab", créer une option avec l'attribut "color" et y
- * 	 insèrer le texte de la couleur correspondante.
+ * 		- Boucle "for of" choix de couleurs : pour chaque couleur du tableau
+ * 	 "colorsTab" de couleurs de l'article, créer une option avec l'attribut
+ *   "color" et y insèrer le texte de la couleur correspondante.
  * Puis appel de la fonction pour éxécution.
  */
-const displayProduct = async () => {
-	await apiRequestProduct();
-	document.title = product.name;
+const displayItem = async () => {
+	await apiRequestItem();
+	document.title = itemSelected.name;
 
-	productImg.src = product.imageUrl;
-	productImg.alt = product.altTxt;
-	document.querySelector('.item__img').appendChild(productImg);
+	itemImageTag.src = itemSelected.imageUrl;
+	itemImageTag.alt = itemSelected.altTxt;
+	document.querySelector('.item__img').appendChild(itemImageTag);
 
-	productName.textContent = product.name;
-	productPrice.textContent = product.price;
-	productDescription.textContent = product.description;
+	itemNameTag.textContent = itemSelected.name;
+	itemPriceTag.textContent = itemSelected.price;
+	itemDescriptionTag.textContent = itemSelected.description;
 
-	let colorList = product.colors;
+	let colorList = itemSelected.colors;
 	for (let color of colorList) {
-		const colorOption = document.createElement('option');
-		colorOption.setAttribute('value', color);
-		colorOption.textContent = color;
-		colorSelect.appendChild(colorOption);
+		const colorOptionTag = document.createElement('option');
+		colorOptionTag.setAttribute('value', color);
+		colorOptionTag.textContent = color;
+		colorSelectTag.appendChild(colorOptionTag);
 	}
 };
-displayProduct();
+displayItem();
 
 /**
  * écoute au clic du bouton "ajouter au panier" :
- * créer l'objet 'item' contenant les infos produit à stocker.
- * appeler la fonction qui permet d'ajouter au local storage.
+ * 	- crée l'objet 'item' avec ses infos à stocker (id,qty, color).
+ * 	- Puis appel de la fonction "checkCart()" de vérification input.
+ * 	- Puis appel de la fonction "addCart()" d' ajout de l'article.
  */
-addToCartBtn.addEventListener('click', () => {
+addToCartButton.addEventListener('click', () => {
 	let item = {
 		id: id,
-		color: colorSelect.value,
-		qty: productQuantity.value,
+		color: colorSelectTag.value,
+		qty: itemQuantityTag.value,
 	};
 	checkCart(item);
 });
@@ -87,11 +89,11 @@ addToCartBtn.addEventListener('click', () => {
  * si le formulaire est correct, éxécuter la fonction d'ajout au panier.
  */
 const checkCart = (item) => {
-	if (colorSelect.value == '' && quantity.value == 0) {
+	if (colorSelectTag.value == '' && quantity.value == 0) {
 		alert('Veuillez choisir un coloris et une quantité, svp');
-	} else if (colorSelect.value == '' && quantity.value !== 0) {
+	} else if (colorSelectTag.value == '' && quantity.value !== 0) {
 		alert('Veuillez choisir un coloris, svp');
-	} else if (colorSelect.value !== '' && quantity.value == 0) {
+	} else if (colorSelectTag.value !== '' && quantity.value == 0) {
 		alert('Veuillez choisir une quantité, svp');
 	} else if (quantity.value > 100) {
 		alert('Veuillez choisir une quantité maximum de 100 articles, svp');
@@ -129,7 +131,7 @@ const addCart = (item) => {
 		saveCart(cartArray);
 	} else {
 		let foundItem = cartArray.find(
-			(art) => art.id == item.id && art.color == item.color
+			(kanap) => kanap.id == item.id && kanap.color == item.color
 		);
 		if (foundItem != undefined) {
 			foundItem.qty = parseInt(item.qty) + parseInt(foundItem.qty);
@@ -141,7 +143,7 @@ const addCart = (item) => {
 	alert(
 		`${item.qty}` +
 			' ' +
-			`${product.name}` +
+			`${itemSelected.name}` +
 			' ' +
 			`${item.color}` +
 			' ajouté(s) à votre panier !'

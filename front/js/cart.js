@@ -2,12 +2,12 @@
 let cartArray = JSON.parse(localStorage.getItem('inCart'));
 
 // variable globale sélecteur pour la fontion empty():
-let section = document.getElementById('cart__items');
+let displayContainerTag = document.getElementById('cart__items');
 
 // Variables pour les fonctions de calcul totaux quantités et prix :
 let totalPrice = 0;
 let totalQuantity = 0;
-let itemQty = 0;
+let itemLsQty = 0;
 
 // Enregistrement panier dans le local storage :
 const saveCart = (cartArray) => {
@@ -16,38 +16,38 @@ const saveCart = (cartArray) => {
 
 // Si le panier est vide (suppression formulaire + message vers l'accueil) :
 const emptyCart = () => {
-	let title = document.createElement('h2');
-	title.style.textAlign = 'center';
-	title.style.fontSize = '2rem';
-	title.textContent = ' 😕  Votre panier est vide...';
-	section.appendChild(title);
+	let titleTag = document.createElement('h2');
+	titleTag.style.textAlign = 'center';
+	titleTag.style.fontSize = '2rem';
+	titleTag.textContent = ' 😕  Votre panier est vide...';
+	displayContainerTag.appendChild(titleTag);
 	// Suppression du formumaire inutile :
-	let orderForm = document.querySelector('.cart__order__form');
-	orderForm.remove();
+	let orderFormTag = document.querySelector('.cart__order__form');
+	orderFormTag.remove();
 	let cartPriceTag = document.querySelector('.cart__price');
 	cartPriceTag.remove();
 	// boite de dialogue pour proposer de retourner à l'accueil :
-	backToHomepage = confirm("Votre panier est vide. Retourner à l'accueil ?");
-	if (backToHomepage) {
+	backToHomepageMsg = confirm("Votre panier est vide. Retourner à l'accueil ?");
+	if (backToHomepageMsg) {
 		location.href = 'index.html';
 	}
 };
 
 // Fonctions de calcul des totaux quantités et prix :
-const totalItemQuantity = () => {
-	totalQuantity += Number(itemQty);
+const calcTotalQuantity = () => {
+	totalQuantity += Number(itemLsQty);
 	document.getElementById('totalQuantity').textContent = totalQuantity;
 };
 
-const totalItemPrice = () => {
-	totalPriceItemCart = itemQty * priceItemCart;
+const calcTotalPrice = () => {
+	totalPriceItemCart = itemLsQty * priceItemCart;
 	totalPrice += totalPriceItemCart;
 	document.getElementById('totalPrice').textContent = totalPrice;
 };
 
-const totalQuantityPrice = () => {
-	totalItemQuantity();
-	totalItemPrice();
+const calcTotalQuantityPrice = () => {
+	calcTotalQuantity();
+	calcTotalPrice();
 };
 
 /**
@@ -67,88 +67,92 @@ const displayCartItems = () => {
 		fetch('http://localhost:3000/api/products/')
 			.then((res) => res.json())
 			.then((itemsFromApi) => {
-				cartArray.forEach((itemFromLs) => {
+				cartArray.forEach((itemFromLocalStorage) => {
 					// récupère les id, qty et color des prod ds le panier
-					let itemId = itemFromLs.id;
-					itemQty = itemFromLs.qty;
-					let itemColor = itemFromLs.color;
+					let itemLsId = itemFromLocalStorage.id;
+					itemLsQty = itemFromLocalStorage.qty;
+					let itemLsColor = itemFromLocalStorage.color;
 
 					// retrouve les infos manquantes des articles du panier :
-					const itemInCart = itemsFromApi.find((kanap) => kanap._id == itemId);
+					const itemInCart = itemsFromApi.find(
+						(kanap) => kanap._id == itemLsId
+					);
 
 					// Variable du prix de l'article :
 					priceItemCart = itemInCart.price;
 
 					// création et insertion des éléments dans le DOM :
-					let article = document.createElement('article');
-					article.classList.add('cart__item');
-					article.dataset.id = itemId;
-					article.dataset.color = itemColor;
-					section.appendChild(article);
+					let articleTag = document.createElement('article');
+					articleTag.classList.add('cart__item');
+					articleTag.dataset.id = itemLsId;
+					articleTag.dataset.color = itemLsColor;
+					displayContainerTag.appendChild(articleTag);
 
-					let divImg = document.createElement('div');
-					divImg.classList.add('cart__item__img');
-					article.appendChild(divImg);
+					let divImgTag = document.createElement('div');
+					divImgTag.classList.add('cart__item__img');
+					articleTag.appendChild(divImgTag);
 
-					let img = document.createElement('img');
-					img.src = itemInCart.imageUrl;
-					img.alt = itemInCart.altTxt;
-					divImg.appendChild(img);
+					let imgTag = document.createElement('img');
+					imgTag.src = itemInCart.imageUrl;
+					imgTag.alt = itemInCart.altTxt;
+					divImgTag.appendChild(imgTag);
 
-					let divContent = document.createElement('div');
-					divContent.classList.add('cart__item__content');
-					article.appendChild(divContent);
+					let divContentTag = document.createElement('div');
+					divContentTag.classList.add('cart__item__content');
+					articleTag.appendChild(divContentTag);
 
-					let divDescription = document.createElement('div');
-					divDescription.classList.add('cart__item__content__description');
-					divContent.appendChild(divDescription);
+					let divDescriptionTag = document.createElement('div');
+					divDescriptionTag.classList.add('cart__item__content__description');
+					divContentTag.appendChild(divDescriptionTag);
 
-					let title = document.createElement('h2');
-					title.textContent = itemInCart.name;
-					divDescription.appendChild(title);
+					let titleTag = document.createElement('h2');
+					titleTag.textContent = itemInCart.name;
+					divDescriptionTag.appendChild(titleTag);
 
-					let color = document.createElement('p');
-					color.textContent = itemColor;
-					divDescription.appendChild(color);
+					let paraColorTag = document.createElement('p');
+					paraColorTag.textContent = itemLsColor;
+					divDescriptionTag.appendChild(paraColorTag);
 
-					let price = document.createElement('p');
-					price.classList.add('price');
-					let totalItemPrice = itemQty * itemInCart.price;
-					price.textContent = totalItemPrice + ' €';
-					divDescription.appendChild(price);
+					let paraPriceTag = document.createElement('p');
+					paraPriceTag.classList.add('price');
+					let totalItemPrice = itemLsQty * itemInCart.price;
+					paraPriceTag.textContent = totalItemPrice + ' €';
+					divDescriptionTag.appendChild(paraPriceTag);
 
-					let divSettings = document.createElement('div');
-					divSettings.classList.add('cart__item__content__settings');
-					article.appendChild(divSettings);
+					let divSettingsTag = document.createElement('div');
+					divSettingsTag.classList.add('cart__item__content__settings');
+					articleTag.appendChild(divSettingsTag);
 
-					let divQuantity = document.createElement('div');
-					divQuantity.classList.add('cart__item__content__settings__quantity');
-					divSettings.appendChild(divQuantity);
+					let divQuantityTag = document.createElement('div');
+					divQuantityTag.classList.add(
+						'cart__item__content__settings__quantity'
+					);
+					divSettingsTag.appendChild(divQuantityTag);
 
 					let quantity = document.createElement('p');
 					quantity.textContent = 'Qté : ';
-					divQuantity.appendChild(quantity);
+					divQuantityTag.appendChild(quantity);
 
-					let inputQty = document.createElement('input');
-					inputQty.setAttribute('type', 'number');
-					inputQty.classList.add('itemQuantity');
-					inputQty.setAttribute('name', 'itemQuantity');
-					inputQty.setAttribute('min', '1');
-					inputQty.setAttribute('max', '100');
-					inputQty.setAttribute('value', itemQty);
-					divSettings.appendChild(inputQty);
+					let inputQtyTag = document.createElement('input');
+					inputQtyTag.setAttribute('type', 'number');
+					inputQtyTag.classList.add('itemQuantity');
+					inputQtyTag.setAttribute('name', 'itemQuantity');
+					inputQtyTag.setAttribute('min', '1');
+					inputQtyTag.setAttribute('max', '100');
+					inputQtyTag.setAttribute('value', itemLsQty);
+					divSettingsTag.appendChild(inputQtyTag);
 
-					let divDelete = document.createElement('div');
-					divDelete.classList.add('cart__item__content__settings__delete');
-					divSettings.appendChild(divDelete);
+					let divDeleteTag = document.createElement('div');
+					divDeleteTag.classList.add('cart__item__content__settings__delete');
+					divSettingsTag.appendChild(divDeleteTag);
 
-					let textDelete = document.createElement('p');
-					textDelete.classList.add('deleteItem');
-					textDelete.textContent = 'Supprimer';
-					divDelete.appendChild(textDelete);
+					let paraDeleteTag = document.createElement('p');
+					paraDeleteTag.classList.add('deleteItem');
+					paraDeleteTag.textContent = 'Supprimer';
+					divDeleteTag.appendChild(paraDeleteTag);
 
 					// appel fonction de calcul des totaux qtés et prix :
-					totalQuantityPrice();
+					calcTotalQuantityPrice();
 				});
 				changeQuantity();
 				deleteItemFromCart();
@@ -160,33 +164,33 @@ displayCartItems();
 
 // Fonction supprime des articles du panier :
 const deleteItemFromCart = () => {
-	let deleteItem = document.querySelectorAll('.deleteItem');
+	let deleteItemButton = document.querySelectorAll('.deleteItem');
 
-	deleteItem.forEach((deleteItem) => {
-		deleteItem.addEventListener('click', () => {
-			confirmDelete = confirm('Voulez-vous retirer cet article du panier ?');
-			if (confirmDelete) {
+	deleteItemButton.forEach((button) => {
+		button.addEventListener('click', () => {
+			confirmDeleteMsg = confirm('Voulez-vous retirer cet article du panier ?');
+			if (confirmDeleteMsg) {
 				// closest() pointe le premier parent <article> du bouton supprimer, pour obtenir ensuite les dataset id et color à comparer :
-				let articleTag = deleteItem.closest('article');
+				let buttonParentTag = button.closest('article');
 
 				// Filtre les articles du localStorage pour ne garder que ceux qui sont différents de l'élément qu'on supprime
 				cartArray = cartArray.filter(
 					(kanap) =>
-						kanap._id !== articleTag.dataset.id &&
-						kanap.color !== articleTag.dataset.color
+						kanap._id !== buttonParentTag.dataset.id &&
+						kanap.color !== buttonParentTag.dataset.color
 				);
 				saveCart(cartArray);
 
 				// Supprime l'élément <article> restant dans le DOM :
-				if (articleTag.parentNode) {
-					articleTag.parentNode.removeChild(articleTag);
+				if (buttonParentTag.parentNode) {
+					buttonParentTag.parentNode.removeChild(buttonParentTag);
 				}
 
 				// Si le panier est vide, fonction emptyCart() :
 				if (cartArray == null || cartArray.length == 0) {
 					emptyCart();
 				} else {
-					totalQuantityPrice();
+					calcTotalQuantityPrice();
 					location.reload();
 				}
 			}
@@ -216,7 +220,7 @@ const changeQuantity = () => {
 			) {
 				foundItem.qty = newQuantity;
 				saveCart(cartArray);
-				totalQuantityPrice();
+				calcTotalQuantityPrice();
 				location.reload();
 			} else {
 				alert('La quantité de cet article doit être comprise entre 1 et 100');
@@ -224,3 +228,73 @@ const changeQuantity = () => {
 		});
 	});
 };
+
+// ------- EXPRESSIONS REGULIERES DU FORMULAIRE -------
+
+// Sélection de la balise "form" pour pour attraper les input par leur "name"
+const form = document.querySelector('.cart__order__form');
+const firstName = form.firstName;
+const lastName = form.lastName;
+const address = form.address;
+const city = form.city;
+const email = form.email;
+
+const firstNameErrorMsg = document.getElementById('firstNameErrorMsg');
+const lastNameErrorMsg = document.getElementById('lastNameErrorMsg');
+const addressErrorMsg = document.getElementById('addressErrorMsg');
+const cityErrorMsg = document.getElementById('cityErrorMsg');
+const emailErrorMsg = document.getElementById('emailErrorMsg');
+
+// Variables contenant les Expressions Régulières :
+const nameRegExp = new RegExp(
+	"^[^.?!:;,/\\/_-]([. '-]?[a-zA-Zàâäéèêëïîôöùûüç])+[^.?!:;,/\\/_-]$"
+);
+const addressRegExp = new RegExp(
+	"^[^.?!:;,/\\/_-]([, .:;'-]?[0-9a-zA-Zàâäéèêëïîôöùûüç])+[^.?!:;,/\\/_-]$"
+);
+const emailRegExp = new RegExp(
+	'^[a-z0-9][-a-z0-9._]+@([-a-z0-9]+.)+[a-z]{2,5}$'
+);
+
+// Validation des saisies dans les champs du formulaire :
+firstName.addEventListener('change', () => {
+	if (nameRegExp.test(firstName.value)) {
+		firstNameErrorMsg.textContent = '';
+	} else {
+		firstNameErrorMsg.textContent = "La saisie du prénom n'est pas valide";
+	}
+});
+
+lastName.addEventListener('change', () => {
+	if (nameRegExp.test(lastName.value)) {
+		lastNameErrorMsg.textContent = 'Saisie ok';
+	} else {
+		lastNameErrorMsg.textContent = "La saisie du prénom n'est pas valide";
+	}
+});
+
+address.addEventListener('change', () => {
+	if (addressRegExp.test(address.value)) {
+		addressErrorMsg.textContent = '';
+	} else {
+		addressErrorMsg.textContent = "La saisie du prénom n'est pas valide";
+	}
+});
+
+city.addEventListener('change', () => {
+	if (nameRegExp.test(city.value)) {
+		cityErrorMsg.textContent = '';
+	} else {
+		cityErrorMsg.textContent = "La saisie de la ville n'est pas valide";
+	}
+});
+
+email.addEventListener('change', () => {
+	if (emailRegExp.test(email.value)) {
+		emailErrorMsg.textContent = '';
+		console.log(email.value);
+	} else {
+		emailErrorMsg.textContent =
+			"La saisie de l'adresse e-mail n'est pas valide";
+	}
+});
