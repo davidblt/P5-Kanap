@@ -10,8 +10,8 @@ const items = document.getElementById('items');
 
 // fonction asynchrone pour requêter l'api avec fetch() :
 const apiRequestList = async () => {
-	await fetch('http://localhost:3000/api/products')
-		.then(res => res.json())
+	await fetch('http://localhost:3000/api/products/')
+		.then((res) => res.json())
 		.then((data) => (productList = data))
 		.catch((error) => {
 			items.style.fontSize = '2rem';

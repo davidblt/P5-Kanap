@@ -1,7 +1,7 @@
 // récupére le panier du local storage traduit en objet JavaScript :
 let cartArray = JSON.parse(localStorage.getItem('inCart'));
 
-// variable globale sélecteur pour la fontion empty():
+// variable globale sélecteur pour la fontion emptyCart():
 let displayContainerTag = document.getElementById('cart__items');
 
 // Variables pour les fonctions de calcul totaux quantités et prix :
@@ -52,11 +52,13 @@ const calcTotalQuantityPrice = () => {
 
 /**
  * Fonction affichage des articles du panier :
- * Si le panier est vide, la fonction empty() est exécutée.
+ * Si le panier est vide, la fonction emptyCart() est exécutée.
  * Sinon, fetch() pour récupérer toutes les données des produits
- * de l'API.Ceci car il n'y a que id, qty et color dans le local storage.
- * Puis : boucle 'for each' pour chaque item du tableau (cartArray),
- * récupére l' id, qty et color,
+ * de l'API. Car il n'y a que : id, qty et color dans le local storage.
+ * Puis, boucle 'for each' : pour chaque article du panier (cartArray),
+ * récupére l' id, qty et color.
+ * Récupère les infos manquantes des articles du panier en les matchant avec
+ * ceux de l'API grâce à leur id.
  * Crée et insère les éléments dans le DOM.
  * Appel des fonctions annexes.
  */
@@ -78,7 +80,7 @@ const displayCartItems = () => {
 						(kanap) => kanap._id == itemLsId
 					);
 
-					// Variable du prix de l'article :
+					// Variable du prix de l'article  :
 					priceItemCart = itemInCart.price;
 
 					// création et insertion des éléments dans le DOM :
@@ -186,7 +188,7 @@ const deleteItemFromCart = () => {
 					buttonParentTag.parentNode.removeChild(buttonParentTag);
 				}
 
-				// Si le panier est vide, fonction emptyCart() :
+				// Si le panier devient vide, éxécute emptyCart() :
 				if (cartArray == null || cartArray.length == 0) {
 					emptyCart();
 				} else {
@@ -198,15 +200,23 @@ const deleteItemFromCart = () => {
 	});
 };
 
-// Fonction modifie les quantités et prix :
+/**
+ * Fonction modifie les quantités et prix :
+ * Sélectionne tous les boutons input pour les écouter au changement.
+ * Boucle forEach : pour chaque changement sur un des articles de même id ET
+ * même couleur, remplace l'ancienne valeur par la nouvelle.
+ * Si la nouvelle valeur de quantité est comprise entre 1 et 100, enregistre
+ * dans le panier du local storage et calcule les nouveaux totaux (+
+ * rechargement de la page pour affichage).
+ * Sinon, affiche un message d'erreur de quantité.
+ */
 const changeQuantity = () => {
 	let inputButton = document.querySelectorAll('.itemQuantity');
 
-	inputButton.forEach((item) => {
-		item.addEventListener('change', () => {
-			let newQuantity = Number(item.value); // item étant une string
-			console.log(newQuantity);
-			let articleTag = item.closest('article');
+	inputButton.forEach((newInput) => {
+		newInput.addEventListener('change', () => {
+			let newQuantity = Number(newInput.value); // newInput étant une string, on le change en nombre.
+			let articleTag = newInput.closest('article');
 
 			let foundItem = cartArray.find(
 				(kanap) =>
@@ -231,7 +241,7 @@ const changeQuantity = () => {
 
 // ------- EXPRESSIONS REGULIERES DU FORMULAIRE -------
 
-// Sélection de la balise "form" pour pour attraper les input par leur "name"
+// Sélection de la balise "form" pour pour attraper les input par leur attribut "name" :
 const form = document.querySelector('.cart__order__form');
 const firstName = form.firstName;
 const lastName = form.lastName;
@@ -246,19 +256,17 @@ const cityErrorMsg = document.getElementById('cityErrorMsg');
 const emailErrorMsg = document.getElementById('emailErrorMsg');
 
 // Variables contenant les Expressions Régulières :
-const nameRegExp = new RegExp(
-	"^[^.?!:;,/\\/_-]([. '-]?[a-zA-Zàâäéèêëïîôöùûüç])+[^.?!:;,/\\/_-]$"
-);
-const addressRegExp = new RegExp(
+const nameRegEx = new RegExp("^[a-zA-Z-' ]+$");
+const addressRegEx = new RegExp(
 	"^[^.?!:;,/\\/_-]([, .:;'-]?[0-9a-zA-Zàâäéèêëïîôöùûüç])+[^.?!:;,/\\/_-]$"
 );
-const emailRegExp = new RegExp(
+const emailRegEx = new RegExp(
 	'^[a-z0-9][-a-z0-9._]+@([-a-z0-9]+.)+[a-z]{2,5}$'
 );
 
 // Validation des saisies dans les champs du formulaire :
 firstName.addEventListener('change', () => {
-	if (nameRegExp.test(firstName.value)) {
+	if (nameRegEx.test(firstName.value)) {
 		firstNameErrorMsg.textContent = '';
 	} else {
 		firstNameErrorMsg.textContent = "La saisie du prénom n'est pas valide";
@@ -266,23 +274,23 @@ firstName.addEventListener('change', () => {
 });
 
 lastName.addEventListener('change', () => {
-	if (nameRegExp.test(lastName.value)) {
-		lastNameErrorMsg.textContent = 'Saisie ok';
+	if (nameRegEx.test(lastName.value)) {
+		lastNameErrorMsg.textContent = '';
 	} else {
-		lastNameErrorMsg.textContent = "La saisie du prénom n'est pas valide";
+		lastNameErrorMsg.textContent = "La saisie du nom n'est pas valide";
 	}
 });
 
 address.addEventListener('change', () => {
-	if (addressRegExp.test(address.value)) {
+	if (addressRegEx.test(address.value)) {
 		addressErrorMsg.textContent = '';
 	} else {
-		addressErrorMsg.textContent = "La saisie du prénom n'est pas valide";
+		addressErrorMsg.textContent = "La saisie de l'adresse n'est pas valide";
 	}
 });
 
 city.addEventListener('change', () => {
-	if (nameRegExp.test(city.value)) {
+	if (nameRegEx.test(city.value)) {
 		cityErrorMsg.textContent = '';
 	} else {
 		cityErrorMsg.textContent = "La saisie de la ville n'est pas valide";
@@ -290,11 +298,78 @@ city.addEventListener('change', () => {
 });
 
 email.addEventListener('change', () => {
-	if (emailRegExp.test(email.value)) {
+	if (emailRegEx.test(email.value)) {
 		emailErrorMsg.textContent = '';
-		console.log(email.value);
 	} else {
 		emailErrorMsg.textContent =
 			"La saisie de l'adresse e-mail n'est pas valide";
 	}
 });
+
+//---- FONCTIONS BOUTON "COMMANDER" ----
+const orderButton = document.getElementById('order');
+
+// Vérification et validation du formulaire et envoi de la commande :
+const isFormValid = () => {
+	orderButton.addEventListener('click', (e) => {
+		e.preventDefault(); // empêche d'envoyer les données avant la vérification de données valides.
+
+		// Vérification de la validité du formulaire avant envoi :
+		if (
+			nameRegEx.test(firstName.value) &&
+			nameRegEx.test(lastName.value) &&
+			addressRegEx.test(address.value) &&
+			nameRegEx.test(city.value) &&
+			emailRegEx.test(email.value)
+		) {
+			sendOrderToServer();
+		} else {
+			alert('Un ou plusieurs champs du formulaire ne sont pas valides');
+		}
+	});
+};
+isFormValid();
+
+// Création d'un tableau contenant les id des articles pour envoi serveur :
+const arrayItemId = cartArray.map((item) => {
+	return item.id;
+});
+
+const sendOrderToServer = () => {
+	// crée l'objet attendu par l'API (infos "contact" + "products"):
+	let order = {
+		contact: {
+			firstName: firstName.value,
+			lastName: lastName.value,
+			address: address.value,
+			city: city.value,
+			email: email.value,
+		},
+		products: arrayItemId,
+	};
+
+	/**
+	 * Envoi de la commande qu format JSON à l'API.
+	 * L'API retourne un numérode commande que 'on récupère sous forme de
+	 * variable.
+	 * Insère cette variable par interpolation dans l'URL de redirection vers
+	 * la page confirmation.
+	 * Si erreur de l'API, affiche un message.
+	 */
+	fetch('http://localhost:3000/api/products/order', {
+		method: 'POST',
+		headers: {
+			Accept: 'application/json',
+			'Content-Type': 'application/json',
+		},
+		body: JSON.stringify(order),
+	})
+		.then((res) => res.json())
+		.then((data) => {
+			const orderIdNbr = data.orderId;
+			window.location = `confirmation.html?orderId=${orderIdNbr}`;
+		})
+		.catch((error) => {
+			alert("Veuillez nous excuser, la requête au serveur n'a pu aboutir");
+		});
+};
