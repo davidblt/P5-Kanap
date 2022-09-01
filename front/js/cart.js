@@ -38,7 +38,6 @@ const emptyCart = () => {
 // Fonctions de calcul des totaux quantités et prix :
 const calcTotalQuantity = () => {
 	totalQuantity += parseInt(itemLsQty);
-	console.log(itemLsQty);
 	document.getElementById('totalQuantity').textContent = totalQuantity;
 };
 
@@ -155,9 +154,7 @@ const displayCartItems = () => {
 					divDescriptionTag.appendChild(paraColorTag);
 
 					let paraPriceTag = document.createElement('p');
-					paraPriceTag.classList.add('price');
-					let totalItemPrice = itemLsQty * itemInCart.price;
-					paraPriceTag.textContent = totalItemPrice + ' €';
+					paraPriceTag.textContent = priceItemCart + ' €';
 					divDescriptionTag.appendChild(paraPriceTag);
 
 					let divSettingsTag = document.createElement('div');
@@ -253,7 +250,6 @@ const changeQuantity = () => {
 
 	inputButton.forEach((newInput) => {
 		newInput.addEventListener('change', (e) => {
-			e.preventDefault();
 			let newQuantity = parseInt(newInput.value); // newInput étant une string, on le change en nombre entier.
 			let articleTag = newInput.closest('article');
 
