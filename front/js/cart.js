@@ -37,33 +37,16 @@ const emptyCart = () => {
 
 // Fonctions de calcul des totaux quantités et prix :
 const calcTotalQuantity = () => {
-	totalQuantity += parseInt(itemLsQty);
+	let totalQuantity = 0;
+	for (let item of cartArray) {
+		// Quantité totale d'articles dans le panier :
+		totalQuantity += parseInt(item.qty);
+	}
 	document.getElementById('totalQuantity').textContent = totalQuantity;
 };
 
 const calcTotalPrice = () => {
-	totalPriceItemCart = itemLsQty * priceItemCart;
-	totalPrice += totalPriceItemCart;
-	document.getElementById('totalPrice').textContent = totalPrice;
-};
-
-const calcTotalQuantityPrice = () => {
-	calcTotalQuantity();
-	calcTotalPrice();
-};
-
-// Fonctions de calcul des totaux après changement des quantités :
-const calcNewTotalQuantity = () => {
-	let newTotalQuantity = 0;
-	for (let item of cartArray) {
-		// Quantité totale d'articles dans le panier :
-		newTotalQuantity += parseInt(item.qty);
-	}
-	document.getElementById('totalQuantity').textContent = newTotalQuantity;
-};
-
-const calcNewTotalPrice = () => {
-	let newTotalPrice = 0;
+	let totalPrice = 0;
 
 	for (let item of cartArray) {
 		let idItemsInCart = item.id;
@@ -74,16 +57,16 @@ const calcNewTotalPrice = () => {
 
 		// Si les articles sont trouvés :
 		if (foundItems) {
-			let newTotalPricePerItemsInCart = foundItems.price * qtyItemsInCart;
-			newTotalPrice += newTotalPricePerItemsInCart;
+			let totalPricePerItemsInCart = foundItems.price * qtyItemsInCart;
+			totalPrice += totalPricePerItemsInCart;
 		}
-		document.getElementById('totalPrice').textContent = newTotalPrice;
 	}
+	document.getElementById('totalPrice').textContent = totalPrice;
 };
 
-const calcNewTotalQuantityPrice = () => {
-	calcNewTotalQuantity();
-	calcNewTotalPrice();
+const calcTotalQuantityPrice = () => {
+	calcTotalQuantity();
+	calcTotalPrice();
 };
 
 /**
@@ -191,9 +174,9 @@ const displayCartItems = () => {
 
 					// appel fonction de calcul des totaux qtés et prix :
 					calcTotalQuantityPrice();
+					changeQuantity();
+					deleteItemFromCart();
 				});
-				changeQuantity();
-				deleteItemFromCart();
 			})
 			.catch((err) => console.log(err));
 	}
@@ -208,7 +191,7 @@ const deleteItemFromCart = () => {
 		button.addEventListener('click', () => {
 			confirmDeleteMsg = confirm('Voulez-vous retirer cet article du panier ?');
 			if (confirmDeleteMsg) {
-				// closest() pointe le premier parent <article> du bouton supprimer, pour obtenir ensuite les dataset id et color à comparer :
+				// closest() pointe le plus proche parent <article> du bouton supprimer, pour obtenir ensuite les dataset id et color à comparer :
 				let buttonParentTag = button.closest('article');
 
 				// Filtre les articles du localStorage pour ne garder que ceux qui sont différents de l'élément qu'on supprime
@@ -228,7 +211,7 @@ const deleteItemFromCart = () => {
 				if (cartArray == null || cartArray.length == 0) {
 					emptyCart();
 				} else {
-					calcNewTotalQuantityPrice();
+					calcTotalQuantityPrice();
 				}
 			}
 		});
@@ -265,7 +248,7 @@ const changeQuantity = () => {
 			) {
 				foundItem.qty = parseInt(newQuantity);
 				saveCart(cartArray);
-				calcNewTotalQuantityPrice();
+				calcTotalQuantityPrice();
 			} else {
 				alert('La quantité de cet article doit être comprise entre 1 et 100');
 			}
