@@ -6,8 +6,10 @@ let displayContainerTag = document.getElementById('cart__items');
 
 // Variables pour les fonctions de calcul totaux quantités et prix :
 let totalPrice = 0;
+let totalPriceItemCart = 0;
 let totalQuantity = 0;
 let itemLsQty = 0;
+let itemsFromApi = [];
 
 // Enregistrement panier dans le local storage :
 const saveCart = (cartArray) => {
@@ -35,7 +37,8 @@ const emptyCart = () => {
 
 // Fonctions de calcul des totaux quantités et prix :
 const calcTotalQuantity = () => {
-	totalQuantity += Number(itemLsQty);
+	totalQuantity += parseInt(itemLsQty);
+	console.log(itemLsQty);
 	document.getElementById('totalQuantity').textContent = totalQuantity;
 };
 
@@ -48,6 +51,40 @@ const calcTotalPrice = () => {
 const calcTotalQuantityPrice = () => {
 	calcTotalQuantity();
 	calcTotalPrice();
+};
+
+// Fonctions de calcul des totaux après changement des quantités :
+const calcNewTotalQuantity = () => {
+	let newTotalQuantity = 0;
+	for (let item of cartArray) {
+		// Quantité totale d'articles dans le panier :
+		newTotalQuantity += parseInt(item.qty);
+	}
+	document.getElementById('totalQuantity').textContent = newTotalQuantity;
+};
+
+const calcNewTotalPrice = () => {
+	let newTotalPrice = 0;
+
+	for (let item of cartArray) {
+		let idItemsInCart = item.id;
+		let qtyItemsInCart = item.qty;
+
+		// Cherche la référence de l'article dans l'API pour avoir le prix :
+		let foundItems = itemsFromApi.find((kanap) => kanap._id == idItemsInCart);
+
+		// Si les articles sont trouvés :
+		if (foundItems) {
+			let newTotalPricePerItemsInCart = foundItems.price * qtyItemsInCart;
+			newTotalPrice += newTotalPricePerItemsInCart;
+		}
+		document.getElementById('totalPrice').textContent = newTotalPrice;
+	}
+};
+
+const calcNewTotalQuantityPrice = () => {
+	calcNewTotalQuantity();
+	calcNewTotalPrice();
 };
 
 /**
@@ -68,14 +105,16 @@ const displayCartItems = () => {
 	} else {
 		fetch('http://localhost:3000/api/products/')
 			.then((res) => res.json())
-			.then((itemsFromApi) => {
+			.then((data) => {
+				itemsFromApi = data; // Permet d'utiliser "itemsFromApi" dans fonctions extérieures.
+
 				cartArray.forEach((itemFromLocalStorage) => {
 					// récupère les id, qty et color des prod ds le panier
 					let itemLsId = itemFromLocalStorage.id;
 					itemLsQty = itemFromLocalStorage.qty;
 					let itemLsColor = itemFromLocalStorage.color;
 
-					// retrouve les infos manquantes des articles du panier :
+					// retrouve les infos manquantes depuis l'API, des articles du panier :
 					const itemInCart = itemsFromApi.find(
 						(kanap) => kanap._id == itemLsId
 					);
@@ -192,8 +231,7 @@ const deleteItemFromCart = () => {
 				if (cartArray == null || cartArray.length == 0) {
 					emptyCart();
 				} else {
-					calcTotalQuantityPrice();
-					location.reload();
+					calcNewTotalQuantityPrice();
 				}
 			}
 		});
@@ -214,8 +252,9 @@ const changeQuantity = () => {
 	let inputButton = document.querySelectorAll('.itemQuantity');
 
 	inputButton.forEach((newInput) => {
-		newInput.addEventListener('change', () => {
-			let newQuantity = Number(newInput.value); // newInput étant une string, on le change en nombre.
+		newInput.addEventListener('change', (e) => {
+			e.preventDefault();
+			let newQuantity = parseInt(newInput.value); // newInput étant une string, on le change en nombre entier.
 			let articleTag = newInput.closest('article');
 
 			let foundItem = cartArray.find(
@@ -228,10 +267,9 @@ const changeQuantity = () => {
 				newQuantity <= 100 &&
 				Number.isInteger(newQuantity) // n'accepte que les nombres entiers
 			) {
-				foundItem.qty = newQuantity;
+				foundItem.qty = parseInt(newQuantity);
 				saveCart(cartArray);
-				calcTotalQuantityPrice();
-				location.reload();
+				calcNewTotalQuantityPrice();
 			} else {
 				alert('La quantité de cet article doit être comprise entre 1 et 100');
 			}
