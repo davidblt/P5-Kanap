@@ -88,9 +88,6 @@ const displayCartItems = () => {
 						(kanap) => kanap._id == itemLsId
 					);
 
-					// Variable du prix de l'article  :
-					priceItemCart = itemInCart.price;
-
 					// création et insertion des éléments dans le DOM :
 					let articleTag = document.createElement('article');
 					articleTag.classList.add('cart__item');
@@ -124,7 +121,7 @@ const displayCartItems = () => {
 					divDescriptionTag.appendChild(paraColorTag);
 
 					let paraPriceTag = document.createElement('p');
-					paraPriceTag.textContent = itemInCart.price + ' €';
+					paraPriceTag.textContent = itemInCart.price + ' € / unité';
 					divDescriptionTag.appendChild(paraPriceTag);
 
 					let divSettingsTag = document.createElement('div');
