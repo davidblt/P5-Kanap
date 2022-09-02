@@ -184,9 +184,9 @@ const deleteItemFromCart = () => {
 						kanap._id !== buttonParentTag.dataset.id &&
 						kanap.color !== buttonParentTag.dataset.color
 				);
-				// Supprime l'élément <article> dans le DOM, sinon il reste affiché :
-				buttonParentTag.parentNode.removeChild(buttonParentTag);
 
+				// Supprime l'élément <article> dans le DOM, sinon il reste affiché :
+				buttonParentTag.remove();
 				saveCart(cartArray);
 
 				// Si le panier devient vide, éxécute emptyCart() :
