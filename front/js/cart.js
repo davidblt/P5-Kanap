@@ -1,18 +1,13 @@
 // récupére le panier du local storage traduit en objet JavaScript :
 let cartArray = JSON.parse(localStorage.getItem('inCart'));
 
-// variable globale sélecteur pour la fontion emptyCart():
-let displayContainerTag = document.getElementById('cart__items');
-
-// Variables pour les fonctions de calcul totaux quantités et prix :
-let totalPrice = 0;
-let totalQuantity = 0;
-let itemLsQty = 0;
-
 // Enregistrement panier dans le local storage :
 const saveCart = (cartArray) => {
 	localStorage.setItem('inCart', JSON.stringify(cartArray));
 };
+
+// variable globale sélecteur pour la fontion emptyCart():
+const displayContainerTag = document.getElementById('cart__items');
 
 // Si le panier est vide (suppression formulaire + message vers l'accueil) :
 const emptyCart = () => {
@@ -22,7 +17,7 @@ const emptyCart = () => {
 	titleTag.textContent = ' 😕  Votre panier est vide...';
 	displayContainerTag.appendChild(titleTag);
 	// Suppression du formumaire inutile :
-	let orderFormTag = document.querySelector('.cart__order__form');
+	let orderFormTag = document.querySelector('.cart__order__form').remove();
 	orderFormTag.remove();
 	let cartPriceTag = document.querySelector('.cart__price');
 	cartPriceTag.remove();
@@ -35,13 +30,24 @@ const emptyCart = () => {
 
 // Fonctions de calcul des totaux quantités et prix :
 const calcTotalQuantity = () => {
-	totalQuantity += Number(itemLsQty);
+	let totalQuantity = 0;
+	for (let item of cartArray) {
+		totalQuantity += parseInt(item.qty);
+	}
 	document.getElementById('totalQuantity').textContent = totalQuantity;
 };
 
 const calcTotalPrice = () => {
-	totalPriceItemCart = itemLsQty * priceItemCart;
-	totalPrice += totalPriceItemCart;
+	let itemQuantityInput = document.querySelectorAll('.itemQuantity');
+	let itemPriceTag = document.querySelectorAll(
+		'.cart__item__content__description'
+	);
+	let totalPrice = 0;
+	for (let i = 0; i < itemPriceTag.length; i++) {
+		totalPrice +=
+			parseInt(itemPriceTag[i].lastElementChild.textContent) *
+			itemQuantityInput[i].value;
+	}
 	document.getElementById('totalPrice').textContent = totalPrice;
 };
 
@@ -68,14 +74,16 @@ const displayCartItems = () => {
 	} else {
 		fetch('http://localhost:3000/api/products/')
 			.then((res) => res.json())
-			.then((itemsFromApi) => {
+			.then((data) => {
+				itemsFromApi = data; // Permet d'utiliser "itemsFromApi" dans les fonctions extérieures.
+
 				cartArray.forEach((itemFromLocalStorage) => {
 					// récupère les id, qty et color des prod ds le panier
 					let itemLsId = itemFromLocalStorage.id;
 					itemLsQty = itemFromLocalStorage.qty;
 					let itemLsColor = itemFromLocalStorage.color;
 
-					// retrouve les infos manquantes des articles du panier :
+					// retrouve les infos manquantes depuis l'API des articles du panier par leur id :
 					const itemInCart = itemsFromApi.find(
 						(kanap) => kanap._id == itemLsId
 					);
@@ -116,9 +124,7 @@ const displayCartItems = () => {
 					divDescriptionTag.appendChild(paraColorTag);
 
 					let paraPriceTag = document.createElement('p');
-					paraPriceTag.classList.add('price');
-					let totalItemPrice = itemLsQty * itemInCart.price;
-					paraPriceTag.textContent = totalItemPrice + ' €';
+					paraPriceTag.textContent = itemInCart.price + ' €';
 					divDescriptionTag.appendChild(paraPriceTag);
 
 					let divSettingsTag = document.createElement('div');
@@ -155,9 +161,9 @@ const displayCartItems = () => {
 
 					// appel fonction de calcul des totaux qtés et prix :
 					calcTotalQuantityPrice();
+					changeQuantity();
+					deleteItemFromCart();
 				});
-				changeQuantity();
-				deleteItemFromCart();
 			})
 			.catch((err) => console.log(err));
 	}
@@ -172,7 +178,7 @@ const deleteItemFromCart = () => {
 		button.addEventListener('click', () => {
 			confirmDeleteMsg = confirm('Voulez-vous retirer cet article du panier ?');
 			if (confirmDeleteMsg) {
-				// closest() pointe le premier parent <article> du bouton supprimer, pour obtenir ensuite les dataset id et color à comparer :
+				// closest() pointe le plus proche parent <article> du bouton supprimer, pour obtenir ensuite les dataset id et color à comparer :
 				let buttonParentTag = button.closest('article');
 
 				// Filtre les articles du localStorage pour ne garder que ceux qui sont différents de l'élément qu'on supprime
@@ -181,19 +187,16 @@ const deleteItemFromCart = () => {
 						kanap._id !== buttonParentTag.dataset.id &&
 						kanap.color !== buttonParentTag.dataset.color
 				);
-				saveCart(cartArray);
+				// Supprime l'élément <article> dans le DOM, sinon il reste affiché :
+				buttonParentTag.parentNode.removeChild(buttonParentTag);
 
-				// Supprime l'élément <article> restant dans le DOM :
-				if (buttonParentTag.parentNode) {
-					buttonParentTag.parentNode.removeChild(buttonParentTag);
-				}
+				saveCart(cartArray);
 
 				// Si le panier devient vide, éxécute emptyCart() :
 				if (cartArray == null || cartArray.length == 0) {
 					emptyCart();
 				} else {
 					calcTotalQuantityPrice();
-					location.reload();
 				}
 			}
 		});
@@ -214,8 +217,8 @@ const changeQuantity = () => {
 	let inputButton = document.querySelectorAll('.itemQuantity');
 
 	inputButton.forEach((newInput) => {
-		newInput.addEventListener('change', () => {
-			let newQuantity = Number(newInput.value); // newInput étant une string, on le change en nombre.
+		newInput.addEventListener('change', (e) => {
+			let newQuantity = parseInt(newInput.value); // newInput étant une string, on le change en nombre entier.
 			let articleTag = newInput.closest('article');
 
 			let foundItem = cartArray.find(
@@ -228,10 +231,9 @@ const changeQuantity = () => {
 				newQuantity <= 100 &&
 				Number.isInteger(newQuantity) // n'accepte que les nombres entiers
 			) {
-				foundItem.qty = newQuantity;
+				foundItem.qty = parseInt(newQuantity);
 				saveCart(cartArray);
 				calcTotalQuantityPrice();
-				location.reload();
 			} else {
 				alert('La quantité de cet article doit être comprise entre 1 et 100');
 			}
@@ -261,7 +263,7 @@ const addressRegEx = new RegExp(
 	"^[^.?!:;,/\\/_-]([, .:;'-]?[0-9a-zA-Zàâäéèêëïîôöùûüç])+[^.?!:;,/\\/_-]$"
 );
 const emailRegEx = new RegExp(
-	'^[a-z0-9][-a-z0-9._]+@([-a-z0-9]+.)+[a-z]{2,5}$'
+	'^[a-z0-9][-a-z0-9._]+@([-a-z0-9]+.)+[.]{1}[a-z]{2,5}$'
 );
 
 // Validation des saisies dans les champs du formulaire :
