@@ -1,20 +1,13 @@
 // récupére le panier du local storage traduit en objet JavaScript :
 let cartArray = JSON.parse(localStorage.getItem('inCart'));
 
-// variable globale sélecteur pour la fontion emptyCart():
-let displayContainerTag = document.getElementById('cart__items');
-
-// Variables pour les fonctions de calcul totaux quantités et prix :
-let totalPrice = 0;
-let totalPriceItemCart = 0;
-let totalQuantity = 0;
-let itemLsQty = 0;
-let itemsFromApi = [];
-
 // Enregistrement panier dans le local storage :
 const saveCart = (cartArray) => {
 	localStorage.setItem('inCart', JSON.stringify(cartArray));
 };
+
+// variable globale sélecteur pour la fontion emptyCart():
+const displayContainerTag = document.getElementById('cart__items');
 
 // Si le panier est vide (suppression formulaire + message vers l'accueil) :
 const emptyCart = () => {
@@ -39,27 +32,21 @@ const emptyCart = () => {
 const calcTotalQuantity = () => {
 	let totalQuantity = 0;
 	for (let item of cartArray) {
-		// Quantité totale d'articles dans le panier :
 		totalQuantity += parseInt(item.qty);
 	}
 	document.getElementById('totalQuantity').textContent = totalQuantity;
 };
 
 const calcTotalPrice = () => {
+	let itemQuantityInput = document.querySelectorAll('.itemQuantity');
+	let itemPriceTag = document.querySelectorAll(
+		'.cart__item__content__description'
+	);
 	let totalPrice = 0;
-
-	for (let item of cartArray) {
-		let idItemsInCart = item.id;
-		let qtyItemsInCart = item.qty;
-
-		// Cherche la référence de l'article dans l'API pour avoir le prix :
-		let foundItems = itemsFromApi.find((kanap) => kanap._id == idItemsInCart);
-
-		// Si les articles sont trouvés :
-		if (foundItems) {
-			let totalPricePerItemsInCart = foundItems.price * qtyItemsInCart;
-			totalPrice += totalPricePerItemsInCart;
-		}
+	for (let i = 0; i < itemPriceTag.length; i++) {
+		totalPrice +=
+			parseInt(itemPriceTag[i].lastElementChild.textContent) *
+			itemQuantityInput[i].value;
 	}
 	document.getElementById('totalPrice').textContent = totalPrice;
 };
@@ -88,7 +75,7 @@ const displayCartItems = () => {
 		fetch('http://localhost:3000/api/products/')
 			.then((res) => res.json())
 			.then((data) => {
-				itemsFromApi = data; // Permet d'utiliser "itemsFromApi" dans fonctions extérieures.
+				itemsFromApi = data; // Permet d'utiliser "itemsFromApi" dans les fonctions extérieures.
 
 				cartArray.forEach((itemFromLocalStorage) => {
 					// récupère les id, qty et color des prod ds le panier
@@ -96,7 +83,7 @@ const displayCartItems = () => {
 					itemLsQty = itemFromLocalStorage.qty;
 					let itemLsColor = itemFromLocalStorage.color;
 
-					// retrouve les infos manquantes depuis l'API, des articles du panier :
+					// retrouve les infos manquantes depuis l'API des articles du panier par leur id :
 					const itemInCart = itemsFromApi.find(
 						(kanap) => kanap._id == itemLsId
 					);
@@ -137,7 +124,7 @@ const displayCartItems = () => {
 					divDescriptionTag.appendChild(paraColorTag);
 
 					let paraPriceTag = document.createElement('p');
-					paraPriceTag.textContent = priceItemCart + ' €';
+					paraPriceTag.textContent = itemInCart.price + ' €';
 					divDescriptionTag.appendChild(paraPriceTag);
 
 					let divSettingsTag = document.createElement('div');
@@ -200,12 +187,10 @@ const deleteItemFromCart = () => {
 						kanap._id !== buttonParentTag.dataset.id &&
 						kanap.color !== buttonParentTag.dataset.color
 				);
-				saveCart(cartArray);
+				// Supprime l'élément <article> dans le DOM, sinon il reste affiché :
+				buttonParentTag.parentNode.removeChild(buttonParentTag);
 
-				// Supprime l'élément <article> restant dans le DOM :
-				if (buttonParentTag.parentNode) {
-					buttonParentTag.parentNode.removeChild(buttonParentTag);
-				}
+				saveCart(cartArray);
 
 				// Si le panier devient vide, éxécute emptyCart() :
 				if (cartArray == null || cartArray.length == 0) {
@@ -278,7 +263,7 @@ const addressRegEx = new RegExp(
 	"^[^.?!:;,/\\/_-]([, .:;'-]?[0-9a-zA-Zàâäéèêëïîôöùûüç])+[^.?!:;,/\\/_-]$"
 );
 const emailRegEx = new RegExp(
-	'^[a-z0-9][-a-z0-9._]+@([-a-z0-9]+.)+[a-z]{2,5}$'
+	'^[a-z0-9][-a-z0-9._]+@([-a-z0-9]+.)+[.]{1}[a-z]{2,5}$'
 );
 
 // Validation des saisies dans les champs du formulaire :
