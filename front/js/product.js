@@ -97,55 +97,57 @@ const checkCart = (item) => {
 		alert('Veuillez choisir une quantité, svp');
 	} else if (quantity.value > 100) {
 		alert('Veuillez choisir une quantité maximum de 100 articles, svp');
+	} else if (quantity.value < 0) {
+		alert('Veuillez choisir une quantité valide, svp')
 	} else {
 		addCart(item);
 	}
 };
 
-// stocke le panier (cartArray) dans le local storage en JSON :
-const saveCart = (cartArray) => {
-	localStorage.setItem('inCart', JSON.stringify(cartArray));
-};
+	// stocke le panier (cartArray) dans le local storage en JSON :
+	const saveCart = (cartArray) => {
+		localStorage.setItem('inCart', JSON.stringify(cartArray));
+	};
 
-/**
- * ajout (item) au panier dans le local storage :
- * 1. récupèrer le panier du local storage traduit en objet.
- * 2. Vérifier si le panier existe et comprend déjà le même article :
- * 	a) si le panier n'existe pas (null), créer le tableau, y ajouter les
- * 	  articles et enregistrer dans le local storage.
- *	b) si le panier existe vérifier si un article de même id et couleur
- * 	  y est déjà présent avec .find() :
- * 		- si undefined = pas de doublon, ajouter l'article dans le
- * 	  panier et enregistrer dans le local storage.
- * 		- si déjà présent, incrémenter la nouvelle quantité et
- *    enregistrer dans le local storage.
- * 	c) si le panier existe sans article similaire : ajouter l'article
- * 	  dans le panier et enregistrer dans le local storage.
- * 3. afficher un message de confirmation au client.
- */
-const addCart = (item) => {
-	let cartArray = JSON.parse(localStorage.getItem('inCart'));
-	if (cartArray == null) {
-		cartArray = [];
-		cartArray.push(item);
-		saveCart(cartArray);
-	} else {
-		let foundItem = cartArray.find(
-			(kanap) => kanap.id == item.id && kanap.color == item.color
-		);
-		if (foundItem != undefined) {
-			foundItem.qty = parseInt(item.qty) + parseInt(foundItem.qty);
-		} else {
+	/**
+	 * ajout (item) au panier dans le local storage :
+	 * 1. récupèrer le panier du local storage traduit en objet.
+	 * 2. Vérifier si le panier existe et comprend déjà le même article :
+	 * 	a) si le panier n'existe pas (null), créer le tableau, y ajouter les
+	 * 	  articles et enregistrer dans le local storage.
+	 *	b) si le panier existe vérifier si un article de même id et couleur
+	 * 	  y est déjà présent avec .find() :
+	 * 		- si undefined = pas de doublon, ajouter l'article dans le
+	 * 	  panier et enregistrer dans le local storage.
+	 * 		- si déjà présent, incrémenter la nouvelle quantité et
+	 *    enregistrer dans le local storage.
+	 * 	c) si le panier existe sans article similaire : ajouter l'article
+	 * 	  dans le panier et enregistrer dans le local storage.
+	 * 3. afficher un message de confirmation au client.
+	 */
+	const addCart = (item) => {
+		let cartArray = JSON.parse(localStorage.getItem('inCart'));
+		if (cartArray == null) {
+			cartArray = [];
 			cartArray.push(item);
+			saveCart(cartArray);
+		} else {
+			let foundItem = cartArray.find(
+				(kanap) => kanap.id == item.id && kanap.color == item.color
+			);
+			if (foundItem != undefined) {
+				foundItem.qty = parseInt(item.qty) + parseInt(foundItem.qty);
+			} else {
+				cartArray.push(item);
+			}
+			saveCart(cartArray);
 		}
-		saveCart(cartArray);
-	}
-	alert(
-		`${item.qty}` +
+		alert(
+			`${item.qty}` +
 			' ' +
 			`${itemSelected.name}` +
 			' ' +
 			`${item.color}` +
 			' ajouté(s) à votre panier !'
-	);
-};
+		)
+	};
