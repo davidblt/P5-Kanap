@@ -260,12 +260,12 @@ const addressRegEx = new RegExp(
 	"^[^.?!:;,/\\/_-]([, .:;'-]?[0-9a-zA-Zàâäéèêëïîôöùûüç])+[^.?!:;,/\\/_-]$"
 );
 const emailRegEx = new RegExp(
-	'^[a-z0-9][-a-z0-9._]+@([-a-z0-9]+.)+[.]{1}[a-z]{2,5}$'
+	'^[a-z0-9][-a-z0-9._]+@([-a-z0-9]+.)+[.]{1}[a-z]{2,3}$'
 );
 
 // Validation des saisies dans les champs du formulaire :
 firstName.addEventListener('change', () => {
-	if (nameRegEx.test(firstName.value)) {
+	if (nameRegEx.test(firstName.value.trim())) {
 		firstNameErrorMsg.textContent = '';
 	} else {
 		firstNameErrorMsg.textContent = "La saisie du prénom n'est pas valide";
@@ -273,7 +273,7 @@ firstName.addEventListener('change', () => {
 });
 
 lastName.addEventListener('change', () => {
-	if (nameRegEx.test(lastName.value)) {
+	if (nameRegEx.test(lastName.value.trim())) {
 		lastNameErrorMsg.textContent = '';
 	} else {
 		lastNameErrorMsg.textContent = "La saisie du nom n'est pas valide";
@@ -281,7 +281,7 @@ lastName.addEventListener('change', () => {
 });
 
 address.addEventListener('change', () => {
-	if (addressRegEx.test(address.value)) {
+	if (addressRegEx.test(address.value.trim())) {
 		addressErrorMsg.textContent = '';
 	} else {
 		addressErrorMsg.textContent = "La saisie de l'adresse n'est pas valide";
@@ -289,7 +289,7 @@ address.addEventListener('change', () => {
 });
 
 city.addEventListener('change', () => {
-	if (nameRegEx.test(city.value)) {
+	if (nameRegEx.test(city.value.trim())) {
 		cityErrorMsg.textContent = '';
 	} else {
 		cityErrorMsg.textContent = "La saisie de la ville n'est pas valide";
@@ -297,7 +297,7 @@ city.addEventListener('change', () => {
 });
 
 email.addEventListener('change', () => {
-	if (emailRegEx.test(email.value)) {
+	if (emailRegEx.test(email.value.trim())) {
 		emailErrorMsg.textContent = '';
 	} else {
 		emailErrorMsg.textContent =
@@ -315,11 +315,11 @@ const isFormValid = () => {
 
 		// Vérification de la validité du formulaire avant envoi :
 		if (
-			nameRegEx.test(firstName.value) &&
-			nameRegEx.test(lastName.value) &&
-			addressRegEx.test(address.value) &&
-			nameRegEx.test(city.value) &&
-			emailRegEx.test(email.value)
+			nameRegEx.test(firstName.value.trim()) &&
+			nameRegEx.test(lastName.value.trim()) &&
+			addressRegEx.test(address.value.trim()) &&
+			nameRegEx.test(city.value.trim()) &&
+			emailRegEx.test(email.value.trim())
 		) {
 			sendOrderToServer();
 		} else {
