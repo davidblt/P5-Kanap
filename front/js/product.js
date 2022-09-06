@@ -132,6 +132,14 @@ const addCart = (item) => {
 	if (cartArray == null) {
 		cartArray = [];
 		cartArray.push(item);
+		alert(
+			`${item.qty}` +
+				' ' +
+				`${itemSelected.name}` +
+				' ' +
+				`${item.color}` +
+				' ajouté(s) à votre panier !'
+		);
 		saveCart(cartArray);
 	} else {
 		let foundItem = cartArray.find(
@@ -139,17 +147,30 @@ const addCart = (item) => {
 		);
 		if (foundItem != undefined) {
 			foundItem.qty = parseInt(item.qty) + parseInt(foundItem.qty);
+			if (foundItem.qty > 100) {
+				foundItem.qty = 100;
+				alert('quantité limitée à 100 articles');
+			} else {
+				alert(
+					`${item.qty}` +
+						' ' +
+						`${itemSelected.name}` +
+						' ' +
+						`${item.color}` +
+						' ajouté(s) à votre panier !'
+				);
+			}
 		} else {
 			cartArray.push(item);
+			alert(
+				`${item.qty}` +
+					' ' +
+					`${itemSelected.name}` +
+					' ' +
+					`${item.color}` +
+					' ajouté(s) à votre panier !'
+			);
 		}
 		saveCart(cartArray);
 	}
-	alert(
-		`${item.qty}` +
-			' ' +
-			`${itemSelected.name}` +
-			' ' +
-			`${item.color}` +
-			' ajouté(s) à votre panier !'
-	);
 };
